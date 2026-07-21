@@ -2,10 +2,17 @@
 
 use Illuminate\Support\Facades\Route;
 
+// Bikin halaman awal (root) otomatis langsung diarahkan ke Kas Kelas
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/kas-kelas');
 });
 
-use App\Http\Controllers\GSheetController;
+// Jalur untuk membuka Workspace Kas Kelas
+Route::get('/kas-kelas', function () {
+    return view('dashboard-kelas');
+});
 
-Route::get('/tes-sheet', [GSheetController::class, 'testKoneksi']);
+// Jalur untuk membuka Workspace Keuangan Pribadi
+Route::get('/pribadi', function () {
+    return view('dashboard-pribadi');
+});
