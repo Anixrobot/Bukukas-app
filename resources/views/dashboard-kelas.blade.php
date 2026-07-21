@@ -57,15 +57,47 @@
         </div>
     </div>
 
-    <!-- Kolom Kanan: Nanti buat nampilin tabel/rekap -->
-    <div class="col-md-6">
-        <div class="card shadow-sm border-0 bg-light text-center h-100">
-            <div class="card-body d-flex flex-column justify-content-center align-items-center text-muted">
-                <h1 class="display-4">📊</h1>
-                <h4>Tabel Data Kas</h4>
-                <p>Nanti rekap data dari Spreadsheet bakal kita tarik dan tampilin di sini bro.</p>
+   <!-- Kolom Kanan: Tabel Data -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-dark text-white fw-bold">
+                📋 Riwayat Transaksi Terbaru
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 500px;">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Jenis</th>
+                                <th>Siswa</th>
+                                <th>Nominal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($dataKas as $kas)
+                                <tr>
+                                    <!-- Indeks array disesuaikan dengan posisi kolom (Tanggal=1, Jenis=2, Siswa=3, Nominal=4) -->
+                                    <td>{{ $kas[1] ?? '-' }}</td>
+                                    <td>
+                                        @if(($kas[2] ?? '') == 'Uang Masuk')
+                                            <span class="badge bg-success">Masuk</span>
+                                        @else
+                                            <span class="badge bg-danger">Keluar</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $kas[3] ?? '-' }}</td>
+                                    <td class="fw-bold">Rp {{ number_format((int)($kas[4] ?? 0), 0, ',', '.') }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">Belum ada data transaksi.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-</div>
 @endsection

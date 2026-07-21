@@ -8,10 +8,8 @@ Route::get('/', function () {
     return redirect('/kas-kelas');
 });
 
-// Nampilin Halaman Form
-Route::get('/kas-kelas', function () {
-    return view('dashboard-kelas');
-});
+// Nampilin Halaman Form + Data Tabel
+Route::get('/kas-kelas', [GSheetController::class, 'indexKasKelas']);
 Route::get('/pribadi', function () {
     return view('dashboard-pribadi');
 });
