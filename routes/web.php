@@ -1,18 +1,20 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\GSheetController;
 
-// Bikin halaman awal (root) otomatis langsung diarahkan ke Kas Kelas
+// Halaman Awal
 Route::get('/', function () {
     return redirect('/kas-kelas');
 });
 
-// Jalur untuk membuka Workspace Kas Kelas
+// Nampilin Halaman Form
 Route::get('/kas-kelas', function () {
     return view('dashboard-kelas');
 });
-
-// Jalur untuk membuka Workspace Keuangan Pribadi
 Route::get('/pribadi', function () {
     return view('dashboard-pribadi');
 });
+
+// JALUR BARU: Buat ngirim data form Kas Kelas ke Controller
+Route::post('/simpan-kas-kelas', [GSheetController::class, 'simpanKasKelas']);
