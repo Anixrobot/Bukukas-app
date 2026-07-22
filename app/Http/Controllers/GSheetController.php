@@ -53,6 +53,70 @@ class GSheetController extends Controller
     }
 
     // ==========================================
+    // DIMENSI 4: HAPUS KAS KELAS
+    // ==========================================
+    public function hapusKasKelas($id)
+    {
+        $client = new Client();
+        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->addScope(Sheets::SPREADSHEETS);
+        $service = new Sheets($client);
+
+        $spreadsheetId = '1udi_WkEsfL_DqnSzxjbH8-2kBBs2eFEfCZKwmWR1ASQ';
+        
+        // Targetin tab 'Transaksi_Kas' 
+        $range = 'Transaksi_Kas!A:A'; 
+
+        try {
+            $response = $service->spreadsheets_values->get($spreadsheetId, $range);
+            $values = $response->getValues() ?? [];
+            
+            $rowIndexToDelete = -1;
+
+            if (!empty($values)) {
+                foreach ($values as $index => $row) {
+                    if (isset($row[0]) && $row[0] == $id) {
+                        $rowIndexToDelete = $index; 
+                        break;
+                    }
+                }
+            }
+
+            if ($rowIndexToDelete != -1) {
+                
+                // GID KHUSUS TAB KAS KELAS (Dapat dari screenshot lu sebelumnya)
+                $sheetId = 1856444649; 
+
+                $requests = [
+                    new Sheets\Request([
+                        'deleteDimension' => [
+                            'range' => [
+                                'sheetId' => $sheetId,
+                                'dimension' => 'ROWS',
+                                'startIndex' => $rowIndexToDelete,
+                                'endIndex' => $rowIndexToDelete + 1
+                            ]
+                        ]
+                    ])
+                ];
+
+                $batchUpdateRequest = new Sheets\BatchUpdateSpreadsheetRequest([
+                    'requests' => $requests
+                ]);
+
+                $service->spreadsheets->batchUpdate($spreadsheetId, $batchUpdateRequest);
+
+                return redirect()->back()->with('sukses', 'Mantap bro, data kas kelas berhasil dihapus!');
+            }
+
+            return redirect()->back()->with('error', 'Waduh, data ID gak ketemu di Excel bro.');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal ngapus data nih: ' . $e->getMessage());
+        }
+    }
+
+    // ==========================================
     // DIMENSI 2: KAS PRIBADI (FITUR BARU)
     // ==========================================
     public function simpanKasPribadi(Request $request)
