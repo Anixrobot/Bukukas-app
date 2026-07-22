@@ -89,14 +89,15 @@
                                     
                                     <!-- Bagian Tombol Hapus Pindah ke Sini -->
                                     <td>
-                                        <form action="/hapus-kas-pribadi/{{ $kas[0] ?? $loop->index }}" method="POST" onsubmit="return confirm('Yakin mau hapus data ini bro?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm">🗑️ Hapus</button>
+                                        
+                                        <form action="/hapus-kas-kelas/{{ $kas[0] ?? $loop->index }}" method="POST" onsubmit="return confirm('Yakin mau hapus data ini bro?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm">🗑️ Hapus</button>
                                         </form>
                                     </td>
-                                </tr>
-                            @empty
+                                    </tr>
+                                @empty
                                 <tr>
                                     <!-- colspan diubah jadi 5 karena kolomnya sekarang ada 5 -->
                                     <td colspan="5" class="text-center py-4 text-muted">Belum ada data transaksi pribadi.</td>

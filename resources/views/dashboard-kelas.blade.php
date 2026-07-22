@@ -2,15 +2,14 @@
 
 @section('konten')
 <div class="row">
-    <!-- Kolom Kiri: Form Input -->
+    <!-- Kolom Kiri: Form Input Pribadi -->
     <div class="col-md-6 mb-4">
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-primary text-white fw-bold">
-                ➕ Input Transaksi Kas Kelas
+            <div class="card-header bg-success text-white fw-bold">
+                💰 Input Kas Pribadi
             </div>
             <div class="card-body">
                 
-                <!-- Notifikasi kalau sukses/gagal -->
                 @if(session('sukses'))
                     <div class="alert alert-success fw-bold">{{ session('sukses') }}</div>
                 @endif
@@ -18,9 +17,8 @@
                     <div class="alert alert-danger fw-bold">{{ session('error') }}</div>
                 @endif
 
-                <!-- Form Input -->
-                <form action="/simpan-kas-kelas" method="POST">
-                    @csrf <!-- Wajib ada di Laravel biar form aman dari hacker -->
+                <form action="/simpan-kas-pribadi" method="POST">
+                    @csrf
                     
                     <div class="mb-3">
                         <label class="form-label fw-bold">Tanggal</label>
@@ -31,37 +29,37 @@
                         <label class="form-label fw-bold">Jenis Transaksi</label>
                         <select name="jenis" class="form-select" required>
                             <option value="">-- Pilih Jenis --</option>
-                            <option value="Uang Masuk">Uang Masuk (Bayar Kas)</option>
-                            <option value="Uang Keluar">Uang Keluar (Beli Keperluan)</option>
+                            <option value="Pemasukan">Pemasukan (Duit Masuk)</option>
+                            <option value="Pengeluaran">Pengeluaran (Duit Keluar)</option>
                         </select>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">ID / Nama Siswa</label>
-                        <input type="text" name="id_siswa" class="form-control" placeholder="Cth: Budi atau S-001" required>
+                        <label class="form-label fw-bold">Kategori</label>
+                        <input type="text" name="kategori" class="form-control" placeholder="Cth: Makan, Bensin, Nabung, Gaji" required>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Nominal (Rp)</label>
-                        <input type="number" name="nominal" class="form-control" placeholder="Cth: 15000" required>
+                        <input type="number" name="nominal" class="form-control" placeholder="Cth: 25000" required>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Keterangan</label>
-                        <textarea name="keterangan" class="form-control" rows="2" placeholder="Cth: Bayar kas minggu ke-1" required></textarea>
+                        <label class="form-label fw-bold">Keterangan Tambahan</label>
+                        <textarea name="keterangan" class="form-control" rows="2" placeholder="Cth: Nasi padang lauk rendang" required></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100 fw-bold">🚀 Simpan Data</button>
+                    <button type="submit" class="btn btn-success w-100 fw-bold">💸 Simpan Data Pribadi</button>
                 </form>
             </div>
         </div>
     </div>
 
-   <!-- Kolom Kanan: Tabel Data -->
+    <!-- Kolom Kanan: Tabel Data Pribadi -->
     <div class="col-md-6 mb-4">
         <div class="card shadow-sm border-0 h-100">
             <div class="card-header bg-dark text-white fw-bold">
-                📋 Riwayat Transaksi Terbaru
+                📋 Riwayat Kas Pribadi
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive" style="max-height: 500px;">
@@ -69,29 +67,38 @@
                         <thead class="table-light sticky-top">
                             <tr>
                                 <th>Tanggal</th>
+                                <th>Kategori</th>
                                 <th>Jenis</th>
-                                <th>Siswa</th>
                                 <th>Nominal</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($dataKas as $kas)
+                            @forelse($dataPribadi as $kas)
                                 <tr>
-                                    <!-- Indeks array disesuaikan dengan posisi kolom (Tanggal=1, Jenis=2, Siswa=3, Nominal=4) -->
                                     <td>{{ $kas[1] ?? '-' }}</td>
+                                    <td>{{ $kas[3] ?? '-' }}</td>
                                     <td>
-                                        @if(($kas[2] ?? '') == 'Uang Masuk')
+                                        @if(($kas[2] ?? '') == 'Pemasukan')
                                             <span class="badge bg-success">Masuk</span>
                                         @else
                                             <span class="badge bg-danger">Keluar</span>
                                         @endif
                                     </td>
-                                    <td>{{ $kas[3] ?? '-' }}</td>
                                     <td class="fw-bold">Rp {{ number_format((int)($kas[4] ?? 0), 0, ',', '.') }}</td>
+                                    
+                                    <td>
+                                        <!-- Route hapus dibenerin jadi /hapus-kas-pribadi/ -->
+                                        <form action="/hapus-kas-pribadi/{{ $kas[0] ?? $loop->index }}" method="POST" onsubmit="return confirm('Yakin mau hapus data ini bro?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm">🗑️ Hapus</button>
+                                        </form>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center py-4 text-muted">Belum ada data transaksi.</td>
+                                    <td colspan="5" class="text-center py-4 text-muted">Belum ada data transaksi pribadi.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -100,4 +107,5 @@
             </div>
         </div>
     </div>
+</div>
 @endsection

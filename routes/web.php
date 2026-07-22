@@ -15,3 +15,4 @@ Route::get('/pribadi', [GSheetController::class, 'indexKasPribadi']);
 Route::post('/simpan-kas-pribadi', [GSheetController::class, 'simpanKasPribadi']);
 
 Route::delete('/hapus-kas-pribadi/{id}', [GSheetController::class, 'hapusKasPribadi']);
+Route::delete('/hapus-kas-kelas/{id}', [GSheetController::class, 'hapusKasKelas']);
