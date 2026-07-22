@@ -10,3 +10,5 @@ Route::get('/', function () {
 Route::get('/kas-kelas', [GsheetController::class, 'indexKasKelas']);
 Route::post('/simpan-kas-kelas', [GsheetController::class, 'simpanKasKelas']);
 
+Route::get('/pribadi', [GSheetController::class, 'indexKasPribadi']);
+Route::post('/simpan-kas-pribadi', [GSheetController::class, 'simpanKasPribadi']);
