@@ -1,18 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\GSheetController;
+use Illuminate\Support\Facades\route;
+use App\Http\Controllers\GsheetControllers;
 
-// Halaman Awal
 Route::get('/', function () {
     return redirect('/kas-kelas');
 });
-
-// Nampilin Halaman Form + Data Tabel
-Route::get('/kas-kelas', [GSheetController::class, 'indexKasKelas']);
-Route::get('/pribadi', function () {
-    return view('dashboard-pribadi');
-});
-
-// JALUR BARU: Buat ngirim data form Kas Kelas ke Controller
-Route::post('/simpan-kas-kelas', [GSheetController::class, 'simpanKasKelas']);
