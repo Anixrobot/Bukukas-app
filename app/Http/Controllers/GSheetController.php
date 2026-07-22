@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Google\Client;
 use Google\Service\Sheets;
@@ -313,4 +314,55 @@ class GSheetController extends Controller
             return redirect()->back()->with('error', 'Gagal: ' . $e->getMessage());
         }
     }
+
+        public function downloadPDF()
+    {
+        // 1. Panggil koneksi ke Google Sheet (Sama persis kayak indexKasKelas)
+        $client = new Client();
+        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->addScope(Sheets::SPREADSHEETS);
+        $service = new Sheets($client);
+        
+        $spreadsheetId = '1udi_WkEsfL_DqnSzxjbH8-2kBBs2eFEfCZKwmWR1ASQ';
+        
+        try {
+            // 2. Tarik data dari GSheet Transaksi Kas
+            $response = $service->spreadsheets_values->get($spreadsheetId, 'Transaksi_Kas!A2:F');
+            $allData = $response->getValues() ?? []; 
+            
+            // Kita balik datanya biar transaksi paling baru ada di urutan paling atas
+            $allData = array_reverse($allData);
+
+            // 3. Kita ubah format datanya biar gampang dibaca sama file PDF lu
+            $dataKas = [];
+            foreach ($allData as $row) {
+                $row = array_pad($row, 6, ''); // Antisipasi kalau ada kolom/cell yang kosong di Excel
+                $dataKas[] = [
+                    'Tanggal'    => $row[1],
+                    'Jenis'      => $row[2],
+                    'ID_Siswa'   => $row[3],
+                    'Nominal'    => $row[4],
+                    'Keterangan' => $row[5]
+                ];
+            }
+
+            // 4. Siapin bungkusan data yang mau dilempar ke file template PDF
+            $data = [
+                'title' => 'Laporan Kas Kelas',
+                'tanggal' => date('d/m/Y'),
+                'kas' => $dataKas 
+            ];
+
+            // 5. Proses merubah file laporan-pdf.blade.php jadi PDF beneran
+            $pdf = Pdf::loadView('laporan-pdf', $data);
+
+            // 6. Langsung download filenya dengan nama yang cakep
+            return $pdf->download('Laporan_Kas_Kelas_'.date('Y-m-d').'.pdf');
+
+        } catch (\Exception $e) {
+            // Kalau misal internet putus atau error GSheet, kita balikin ke halaman dengan pesan error
+            return redirect()->back()->with('error', 'Gagal bikin PDF bro: ' . $e->getMessage());
+        }
+    }
+
 }

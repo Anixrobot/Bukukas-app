@@ -28,3 +28,4 @@ Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallba
 
 Route::get('/kas-kelas', [\App\Http\Controllers\GSheetController::class, 'indexKasKelas']);
 Route::get('/pribadi', [\App\Http\Controllers\GSheetController::class, 'indexKasPribadi']);
+Route::get('/kas-kelas/download-pdf', [\App\Http\Controllers\GSheetController::class, 'downloadPDF'])->name('kas.pdf');
