@@ -10,7 +10,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
+// Nah di baris ini bro, kita tambahin google_id, google_token, google_refresh_token
+#[Fillable(['name', 'email', 'password', 'google_id', 'google_token', 'google_refresh_token'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -24,6 +25,7 @@ class User extends Authenticatable
      */
     protected function casts(): array
     {
+        // Bagian ini balikin ke default bawaan Laravel
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
