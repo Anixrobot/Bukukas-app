@@ -365,4 +365,43 @@ class GSheetController extends Controller
         }
     }
 
+    public function downloadPDFPribadi()
+    {
+        $client = new Client();
+        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->addScope(Sheets::SPREADSHEETS);
+        $service = new Sheets($client);
+        
+        $spreadsheetId = '1udi_WkEsfL_DqnSzxjbH8-2kBBs2eFEfCZKwmWR1ASQ';
+        
+        try {
+            $response = $service->spreadsheets_values->get($spreadsheetId, 'Transaksi_Pribadi!A2:F');
+            $allData = $response->getValues() ?? []; 
+            $allData = array_reverse($allData);
+
+            $dataPribadi = [];
+            foreach ($allData as $row) {
+                $row = array_pad($row, 6, ''); 
+                $dataPribadi[] = [
+                    'Tanggal'    => $row[1],
+                    'Jenis'      => $row[2],
+                    'Kategori'   => $row[3], // Kalau di kas kelas namanya ID Siswa, di sini Kategori
+                    'Nominal'    => $row[4],
+                    'Keterangan' => $row[5]
+                ];
+            }
+
+            $data = [
+                'title' => 'Laporan Kas Pribadi',
+                'tanggal' => date('d/m/Y'),
+                'kas' => $dataPribadi 
+            ];
+
+            $pdf = Pdf::loadView('laporan-pribadi-pdf', $data);
+            return $pdf->download('Laporan_Kas_Pribadi_'.date('Y-m-d').'.pdf');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal bikin PDF bro: ' . $e->getMessage());
+        }
+    }
 }
