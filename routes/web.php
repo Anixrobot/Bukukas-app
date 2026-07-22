@@ -1,14 +1,15 @@
 <?php
 
-use Illuminate\Support\Facades\route;
-use App\Http\Controllers\GsheetControllers;
+use Illuminate\Support\Facades\Route; // Benerin 'route' jadi 'Route'
+use App\Http\Controllers\GSheetController; // Hapus 's' di akhir, pakai 'S' kapital
 
 Route::get('/', function () {
     return redirect('/kas-kelas');
 });
 
-Route::get('/kas-kelas', [GsheetController::class, 'indexKasKelas']);
-Route::post('/simpan-kas-kelas', [GsheetController::class, 'simpanKasKelas']);
+// Samain semua pakai GSheetController (S kapital)
+Route::get('/kas-kelas', [GSheetController::class, 'indexKasKelas']);
+Route::post('/simpan-kas-kelas', [GSheetController::class, 'simpanKasKelas']);
 
 Route::get('/pribadi', [GSheetController::class, 'indexKasPribadi']);
 Route::post('/simpan-kas-pribadi', [GSheetController::class, 'simpanKasPribadi']);
