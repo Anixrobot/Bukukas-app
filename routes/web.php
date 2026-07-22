@@ -1,21 +1,20 @@
 <?php
 
-use Illuminate\Support\Facades\Route; // Benerin 'route' jadi 'Route'
-use App\Http\Controllers\GSheetController; // Hapus 's' di akhir, pakai 'S' kapital
+use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect('/kas-kelas');
+    return view('welcome');
 });
 
-// Samain semua pakai GSheetController (S kapital)
-Route::get('/kas-kelas', [GSheetController::class, 'indexKasKelas']);
-Route::post('/simpan-kas-kelas', [GSheetController::class, 'simpanKasKelas']);
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/pribadi', [GSheetController::class, 'indexKasPribadi']);
-Route::post('/simpan-kas-pribadi', [GSheetController::class, 'simpanKasPribadi']);
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
 
-Route::delete('/hapus-kas-pribadi/{id}', [GSheetController::class, 'hapusKasPribadi']);
-Route::delete('/hapus-kas-kelas/{id}', [GSheetController::class, 'hapusKasKelas']);
-
-Route::post('/update-kas-pribadi/{id}', [\App\Http\Controllers\GSheetController::class, 'updateKasPribadi']);
-Route::post('/update-kas-kelas/{id}', [\App\Http\Controllers\GSheetController::class, 'updateKasKelas']);
+require __DIR__.'/auth.php';
