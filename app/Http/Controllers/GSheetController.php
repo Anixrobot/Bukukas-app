@@ -97,4 +97,68 @@ class GSheetController extends Controller
             return view('dashboard-pribadi', ['dataPribadi' => []])->with('error', 'Gagal narik data: ' . $e->getMessage());
         }
     }
+
+    // ==========================================
+    // DIMENSI 3: HAPUS KAS PRIBADI
+    // ==========================================
+    public function hapusKasPribadi($id)
+    {
+        $client = new Client();
+        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->addScope(Sheets::SPREADSHEETS);
+        $service = new Sheets($client);
+
+        $spreadsheetId = '1udi_WkEsfL_DqnSzxjbH8-2kBBs2eFEfCZKwmWR1ASQ';
+        $range = 'Transaksi_Pribadi!A:A'; 
+
+        try {
+            // 1. Cari baris ke berapa ID ini berada
+            $response = $service->spreadsheets_values->get($spreadsheetId, $range);
+            $values = $response->getValues() ?? [];
+            
+            $rowIndexToDelete = -1;
+
+            if (!empty($values)) {
+                foreach ($values as $index => $row) {
+                    if (isset($row[0]) && $row[0] == $id) {
+                        $rowIndexToDelete = $index; // Nyimpen index barisnya
+                        break;
+                    }
+                }
+            }
+
+            // 2. Eksekusi Hapus Baris jika ID Ketemu
+            if ($rowIndexToDelete != -1) {
+                
+                // GID dari gambar image_5fb658.png
+                $sheetId = 1464599245; 
+
+                $requests = [
+                    new Sheets\Request([
+                        'deleteDimension' => [
+                            'range' => [
+                                'sheetId' => $sheetId,
+                                'dimension' => 'ROWS',
+                                'startIndex' => $rowIndexToDelete,
+                                'endIndex' => $rowIndexToDelete + 1
+                            ]
+                        ]
+                    ])
+                ];
+
+                $batchUpdateRequest = new Sheets\BatchUpdateSpreadsheetRequest([
+                    'requests' => $requests
+                ]);
+
+                $service->spreadsheets->batchUpdate($spreadsheetId, $batchUpdateRequest);
+
+                return redirect()->back()->with('sukses', 'Mantap bro, data kas pribadi berhasil dihapus!');
+            }
+
+            return redirect()->back()->with('error', 'Waduh, data ID gak ketemu di Excel bro.');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal ngapus data nih: ' . $e->getMessage());
+        }
+    }
 }
