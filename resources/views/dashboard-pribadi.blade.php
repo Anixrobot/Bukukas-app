@@ -1,15 +1,41 @@
 @extends('layout')
 
 @section('konten')
-<div class="row">
-    <!-- Kolom Kiri: Form Input Pribadi -->
-    <div class="col-md-6 mb-4">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-success text-white fw-bold">
-                💰 Input Kas Pribadi
-            </div>
+
+<!-- WIDGET ANALITIK SALDO -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-success shadow-sm">
             <div class="card-body">
-                
+                <h6 class="card-title">📈 Total Pemasukan</h6>
+                <h3 class="fw-bold">Rp {{ number_format($totalPemasukan, 0, ',', '.') }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-danger shadow-sm">
+            <div class="card-body">
+                <h6 class="card-title">📉 Total Pengeluaran</h6>
+                <h3 class="fw-bold">Rp {{ number_format($totalPengeluaran, 0, ',', '.') }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-primary shadow-sm">
+            <div class="card-body">
+                <h6 class="card-title">💼 Sisa Saldo</h6>
+                <h3 class="fw-bold">Rp {{ number_format($saldo, 0, ',', '.') }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Kolom Kiri: Form Input -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-success text-white fw-bold">💰 Input Kas Pribadi</div>
+            <div class="card-body">
                 @if(session('sukses'))
                     <div class="alert alert-success fw-bold">{{ session('sukses') }}</div>
                 @endif
@@ -19,49 +45,58 @@
 
                 <form action="/simpan-kas-pribadi" method="POST">
                     @csrf
-                    
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label class="form-label fw-bold">Tanggal</label>
                         <input type="date" name="tanggal" class="form-control" required>
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Jenis Transaksi</label>
+                    <div class="mb-2">
+                        <label class="form-label fw-bold">Jenis</label>
                         <select name="jenis" class="form-select" required>
-                            <option value="">-- Pilih Jenis --</option>
-                            <option value="Pemasukan">Pemasukan (Duit Masuk)</option>
-                            <option value="Pengeluaran">Pengeluaran (Duit Keluar)</option>
+                            <option value="">Pilih Jenis</option>
+                            <option value="Pemasukan">Pemasukan</option>
+                            <option value="Pengeluaran">Pengeluaran</option>
                         </select>
                     </div>
-
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label class="form-label fw-bold">Kategori</label>
-                        <input type="text" name="kategori" class="form-control" placeholder="Cth: Makan, Bensin, Nabung, Gaji" required>
+                        <input type="text" name="kategori" class="form-control" required>
                     </div>
-
+                    <div class="mb-2">
+                        <label class="form-label fw-bold">Nominal</label>
+                        <input type="number" name="nominal" class="form-control" required>
+                    </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Nominal (Rp)</label>
-                        <input type="number" name="nominal" class="form-control" placeholder="Cth: 25000" required>
+                        <label class="form-label fw-bold">Keterangan</label>
+                        <textarea name="keterangan" class="form-control" rows="2" required></textarea>
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Keterangan Tambahan</label>
-                        <textarea name="keterangan" class="form-control" rows="2" placeholder="Cth: Nasi padang lauk rendang" required></textarea>
-                    </div>
-
-                    <button type="submit" class="btn btn-success w-100 fw-bold">💸 Simpan Data Pribadi</button>
+                    <button type="submit" class="btn btn-success w-100 fw-bold">Simpan Data</button>
                 </form>
             </div>
         </div>
     </div>
 
-<!-- Kolom Kanan: Tabel Data Pribadi -->
-    <div class="col-md-6 mb-4">
+    <!-- Kolom Kanan: Tabel, Filter, dan Modal Edit -->
+    <div class="col-md-8 mb-4">
         <div class="card shadow-sm border-0 h-100">
-            <div class="card-header bg-dark text-white fw-bold">
-                📋 Riwayat Kas Pribadi
+            <div class="card-header bg-dark text-white fw-bold d-flex justify-content-between align-items-center">
+                <span>📋 Riwayat Kas Pribadi</span>
             </div>
-            <div class="card-body p-0">
+            <div class="card-body">
+                
+                <!-- FITUR FILTER & PENCARIAN -->
+                <form action="/pribadi" method="GET" class="row g-2 mb-3">
+                    <div class="col-auto">
+                        <input type="month" name="bulan" class="form-control" value="{{ $bulan ?? '' }}">
+                    </div>
+                    <div class="col-auto">
+                        <input type="text" name="search" class="form-control" placeholder="Cari kategori/ket..." value="{{ $search ?? '' }}">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-secondary">🔍 Filter</button>
+                        <a href="/pribadi" class="btn btn-outline-danger">Reset</a>
+                    </div>
+                </form>
+
                 <div class="table-responsive" style="max-height: 500px;">
                     <table class="table table-hover table-striped mb-0">
                         <thead class="table-light sticky-top">
@@ -70,7 +105,7 @@
                                 <th>Kategori</th>
                                 <th>Jenis</th>
                                 <th>Nominal</th>
-                                <th>Aksi</th> <!-- Tambahan Judul Kolom -->
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -86,21 +121,68 @@
                                         @endif
                                     </td>
                                     <td class="fw-bold">Rp {{ number_format((int)($kas[4] ?? 0), 0, ',', '.') }}</td>
-                                    
-                                    <!-- Bagian Tombol Hapus Pindah ke Sini -->
                                     <td>
-                                        
-                                        <form action="/hapus-kas-kelas/{{ $kas[0] ?? $loop->index }}" method="POST" onsubmit="return confirm('Yakin mau hapus data ini bro?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm">🗑️ Hapus</button>
-                                        </form>
+                                        <div class="d-flex gap-1">
+                                            <!-- Tombol Pemicu Modal Edit -->
+                                            <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ $loop->index }}">
+                                                ✏️ Edit
+                                            </button>
+
+                                            <!-- Tombol Hapus -->
+                                            <form action="/hapus-kas-pribadi/{{ $kas[0] ?? '' }}" method="POST" onsubmit="return confirm('Yakin hapus?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
+                                            </form>
+                                        </div>
                                     </td>
-                                    </tr>
-                                @empty
+                                </tr>
+
+                                <!-- MODAL EDIT (Bikin Pop-up buat masing-masing baris) -->
+                                <div class="modal fade" id="editModal{{ $loop->index }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-warning">
+                                                <h5 class="modal-title fw-bold">✏️ Edit Transaksi</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form action="/update-kas-pribadi/{{ $kas[0] ?? '' }}" method="POST">
+                                                    @csrf
+                                                    <div class="mb-2">
+                                                        <label>Tanggal</label>
+                                                        <input type="date" name="tanggal" class="form-control" value="{{ $kas[1] ?? '' }}" required>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <label>Jenis</label>
+                                                        <select name="jenis" class="form-select" required>
+                                                            <option value="Pemasukan" {{ ($kas[2] ?? '') == 'Pemasukan' ? 'selected' : '' }}>Pemasukan</option>
+                                                            <option value="Pengeluaran" {{ ($kas[2] ?? '') == 'Pengeluaran' ? 'selected' : '' }}>Pengeluaran</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <label>Kategori</label>
+                                                        <input type="text" name="kategori" class="form-control" value="{{ $kas[3] ?? '' }}" required>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <label>Nominal</label>
+                                                        <input type="number" name="nominal" class="form-control" value="{{ $kas[4] ?? '' }}" required>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <label>Keterangan</label>
+                                                        <textarea name="keterangan" class="form-control" required>{{ $kas[5] ?? '' }}</textarea>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-warning w-100 fw-bold">Update Data</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- END MODAL -->
+
+                            @empty
                                 <tr>
-                                    <!-- colspan diubah jadi 5 karena kolomnya sekarang ada 5 -->
-                                    <td colspan="5" class="text-center py-4 text-muted">Belum ada data transaksi pribadi.</td>
+                                    <td colspan="5" class="text-center py-4 text-muted">Belum ada data.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -109,3 +191,5 @@
             </div>
         </div>
     </div>
+</div>
+@endsection

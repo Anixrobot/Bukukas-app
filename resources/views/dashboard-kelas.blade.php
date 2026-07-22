@@ -2,11 +2,11 @@
 
 @section('konten')
 <div class="row">
-    <!-- Kolom Kiri: Form Input Pribadi -->
+    <!-- Kolom Kiri: Form Input Kas Kelas -->
     <div class="col-md-6 mb-4">
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-success text-white fw-bold">
-                💰 Input Kas Pribadi
+            <div class="card-header bg-primary text-white fw-bold">
+                🏫 Input Kas Kelas
             </div>
             <div class="card-body">
                 
@@ -17,7 +17,7 @@
                     <div class="alert alert-danger fw-bold">{{ session('error') }}</div>
                 @endif
 
-                <form action="/simpan-kas-pribadi" method="POST">
+                <form action="/simpan-kas-kelas" method="POST">
                     @csrf
                     
                     <div class="mb-3">
@@ -35,8 +35,8 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Kategori</label>
-                        <input type="text" name="kategori" class="form-control" placeholder="Cth: Makan, Bensin, Nabung, Gaji" required>
+                        <label class="form-label fw-bold">ID Siswa</label>
+                        <input type="text" name="id_siswa" class="form-control" placeholder="Cth: Nama siswa atau ID siswa" required>
                     </div>
 
                     <div class="mb-3">
@@ -46,20 +46,20 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Keterangan Tambahan</label>
-                        <textarea name="keterangan" class="form-control" rows="2" placeholder="Cth: Nasi padang lauk rendang" required></textarea>
+                        <textarea name="keterangan" class="form-control" rows="2" placeholder="Cth: Bayar kas bulan Juli" required></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-success w-100 fw-bold">💸 Simpan Data Pribadi</button>
+                    <button type="submit" class="btn btn-primary w-100 fw-bold">🏫 Simpan Data Kas Kelas</button>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Kolom Kanan: Tabel Data Pribadi -->
+    <!-- Kolom Kanan: Tabel Data Kas Kelas -->
     <div class="col-md-6 mb-4">
         <div class="card shadow-sm border-0 h-100">
             <div class="card-header bg-dark text-white fw-bold">
-                📋 Riwayat Kas Pribadi
+                📋 Riwayat Kas Kelas
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive" style="max-height: 500px;">
@@ -67,14 +67,14 @@
                         <thead class="table-light sticky-top">
                             <tr>
                                 <th>Tanggal</th>
-                                <th>Kategori</th>
+                                <th>ID Siswa</th>
                                 <th>Jenis</th>
                                 <th>Nominal</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($dataPribadi as $kas)
+                            @forelse($dataKas as $kas)
                                 <tr>
                                     <td>{{ $kas[1] ?? '-' }}</td>
                                     <td>{{ $kas[3] ?? '-' }}</td>
@@ -88,8 +88,7 @@
                                     <td class="fw-bold">Rp {{ number_format((int)($kas[4] ?? 0), 0, ',', '.') }}</td>
                                     
                                     <td>
-                                        <!-- Route hapus dibenerin jadi /hapus-kas-pribadi/ -->
-                                        <form action="/hapus-kas-pribadi/{{ $kas[0] ?? $loop->index }}" method="POST" onsubmit="return confirm('Yakin mau hapus data ini bro?');">
+                                        <form action="/hapus-kas-kelas/{{ $kas[0] ?? $loop->index }}" method="POST" onsubmit="return confirm('Yakin mau hapus data kas kelas ini bro?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger btn-sm">🗑️ Hapus</button>
@@ -98,7 +97,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center py-4 text-muted">Belum ada data transaksi pribadi.</td>
+                                    <td colspan="5" class="text-center py-4 text-muted">Belum ada data transaksi kas kelas.</td>
                                 </tr>
                             @endforelse
                         </tbody>
