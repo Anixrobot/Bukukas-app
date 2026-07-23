@@ -468,7 +468,7 @@ class GSheetController extends Controller
     public function hapusSiswa($id)
     {
         $client = new \Google\Client();
-        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->setAuthConfig(json_decode(env('GOOGLE_SERVICE_ACCOUNT_JSON'), true));
         $client->addScope(\Google\Service\Sheets::SPREADSHEETS);
         $service = new \Google\Service\Sheets($client);
         $spreadsheetId = '1udi_WkEsfL_DqnSzxjbH8-2kBBs2eFEfCZKwmWR1ASQ';
