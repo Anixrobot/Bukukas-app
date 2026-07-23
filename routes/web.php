@@ -44,3 +44,4 @@ Route::delete('/hapus-kas-pribadi/{id}', [\App\Http\Controllers\GSheetController
 
 Route::get('/siswa', [App\Http\Controllers\GSheetController::class, 'indexSiswa'])->name('siswa.index');
 Route::post('/siswa', [App\Http\Controllers\GSheetController::class, 'simpanSiswa'])->name('siswa.simpan');
+Route::delete('/hapus-siswa/{id}', [App\Http\Controllers\GSheetController::class, 'hapusSiswa'])->name('siswa.hapus');

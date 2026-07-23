@@ -464,4 +464,68 @@ class GSheetController extends Controller
             return redirect()->back()->with('error', 'Proses penyimpanan data gagal: ' . $e->getMessage());
         }
     }
+
+    public function hapusSiswa($id)
+    {
+        $client = new \Google\Client();
+        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->addScope(\Google\Service\Sheets::SPREADSHEETS);
+        $service = new \Google\Service\Sheets($client);
+        $spreadsheetId = '1udi_WkEsfL_DqnSzxjbH8-2kBBs2eFEfCZKwmWR1ASQ';
+        
+        try {
+            // Cari baris yang ID Siswa-nya cocok
+            $response = $service->spreadsheets_values->get($spreadsheetId, 'Siswa!A:A');
+            $values = $response->getValues() ?? [];
+            $rowIndexToDelete = -1;
+
+            foreach ($values as $index => $row) {
+                if (isset($row[0])) {
+                    $idExcel = trim((string)$row[0]);
+                    $idDicari = trim((string)$id);
+                    if ($idExcel !== '' && $idExcel === $idDicari) {
+                        $rowIndexToDelete = $index;
+                        break;
+                    }
+                }
+            }
+
+            if ($rowIndexToDelete != -1) {
+                // Ambil sheetId numerik untuk sheet "Siswa" secara dinamis
+                $spreadsheet = $service->spreadsheets->get($spreadsheetId);
+                $siswaSheetId = null;
+                foreach ($spreadsheet->getSheets() as $sheet) {
+                    if ($sheet->getProperties()->getTitle() === 'Siswa') {
+                        $siswaSheetId = $sheet->getProperties()->getSheetId();
+                        break;
+                    }
+                }
+
+                if ($siswaSheetId === null) {
+                    return redirect()->back()->with('error', 'Sheet "Siswa" tidak ditemukan.');
+                }
+
+                $requests = [
+                    new \Google\Service\Sheets\Request([
+                        'deleteDimension' => [
+                            'range' => [
+                                'sheetId' => $siswaSheetId,
+                                'dimension' => 'ROWS',
+                                'startIndex' => $rowIndexToDelete,
+                                'endIndex' => $rowIndexToDelete + 1
+                            ]
+                        ]
+                    ])
+                ];
+                $service->spreadsheets->batchUpdate(
+                    $spreadsheetId,
+                    new \Google\Service\Sheets\BatchUpdateSpreadsheetRequest(['requests' => $requests])
+                );
+                return redirect()->back()->with('sukses', 'Data Siswa berhasil dihapus dari sistem.');
+            }
+            return redirect()->back()->with('error', 'Data siswa tidak ditemukan untuk dihapus.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage());
+        }
+    }
 }

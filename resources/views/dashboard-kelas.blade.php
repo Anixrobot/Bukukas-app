@@ -95,7 +95,7 @@
     </div>
 </div>
 
-<!-- WIDGET DAFTAR BELUM BAYAR (Dikeluarin dari loop tabel biar bener) -->
+<!-- WIDGET DAFTAR BELUM BAYAR -->
 <div class="px-5 mb-6">
     <div class="bg-white rounded-2xl shadow-sm border border-red-100 overflow-hidden">
         <div class="bg-red-50 px-5 py-3 border-b border-red-100 flex justify-between items-center">
@@ -130,7 +130,7 @@
 </div>
 
 <!-- RIWAYAT & FILTER -->
-<div class="px-5 mb-8">
+<div class="px-5 mb-24"> <!-- Margin bottom ditambah biar list paling bawah nggak ketutup navbar -->
     <div class="flex items-center justify-between mb-4">
         <h3 class="font-bold text-gray-800 text-lg">📋 Riwayat Kas Kelas</h3>
     </div>
@@ -217,6 +217,8 @@
         @endforelse
     </div>
 </div>
+
+
 
 <!-- MODAL EDIT KELAS (Murni Tailwind + JS) -->
 <div id="modalEditKelas" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 backdrop-blur-sm px-4">
