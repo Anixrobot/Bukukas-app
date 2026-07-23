@@ -28,9 +28,9 @@ class GSheetController extends Controller
         
         try {
             $service->spreadsheets_values->append($spreadsheetId, 'Transaksi_Kas!A:F', $body, $params);
-            return redirect()->back()->with('sukses', 'Mantap bro! Data Kas Kelas berhasil masuk ke Spreadsheet.');
+            return redirect()->back()->with('sukses', 'Data Kas Kelas berhasil disimpan.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Waduh gagal: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menyimpan data: ' . $e->getMessage());
         }
     }
 
@@ -44,36 +44,32 @@ class GSheetController extends Controller
         $spreadsheetId = '1udi_WkEsfL_DqnSzxjbH8-2kBBs2eFEfCZKwmWR1ASQ';
         
         try {
-            // 1. Tarik Data Transaksi Kas
             $response = $service->spreadsheets_values->get($spreadsheetId, 'Transaksi_Kas!A2:F');
             $allData = $response->getValues() ?? []; 
 
-            // 2. Tarik Data Siswa (Dari Sheet yang lu tunjukin di gambar)
             $responseSiswa = $service->spreadsheets_values->get($spreadsheetId, 'Siswa!A2:C');
             $allSiswa = $responseSiswa->getValues() ?? [];
             
             $totalPemasukan = 0;
             $totalPengeluaran = 0;
             $filteredData = [];
-            $sudahBayarBulanIni = []; // Nampung yang udah lunas
+            $sudahBayarBulanIni = []; 
 
             $search = $request->query('search');
             $bulan = $request->query('bulan');
-            $bulanAktif = $bulan ?: date('Y-m'); // Kalau filter bulan kosong, pakai bulan sekarang
+            $bulanAktif = $bulan ?: date('Y-m'); 
 
             foreach ($allData as $row) {
-                $row = array_pad($row, 6, ''); // Antisipasi cell kosong
+                $row = array_pad($row, 6, ''); 
                 $tanggal = $row[1];
                 $jenis = $row[2];
                 $idSiswa = $row[3];
                 $nominal = (int)$row[4];
                 $keterangan = strtolower($row[5]);
 
-                // Filter dashboard utama
                 $matchSearch = !$search || strpos($keterangan, strtolower($search)) !== false || strpos(strtolower($idSiswa), strtolower($search)) !== false;
                 $matchBulan = !$bulan || strpos($tanggal, $bulan) === 0;
 
-                // Kumpulin nama/ID yang udah bayar di bulan yang lagi di-filter
                 if (strpos($tanggal, $bulanAktif) === 0 && ($jenis == 'Pemasukan' || $jenis == 'Uang Masuk')) {
                     $sudahBayarBulanIni[] = strtolower(trim($idSiswa));
                 }
@@ -88,15 +84,13 @@ class GSheetController extends Controller
             $saldo = $totalPemasukan - $totalPengeluaran;
             $dataKas = array_reverse($filteredData);
 
-            // 3. Logika Cek Penunggak Kas
             $belumBayar = [];
             foreach ($allSiswa as $siswa) {
                 $siswa = array_pad($siswa, 3, '');
-                $idS = strtolower(trim($siswa[0])); // ID_Siswa
-                $namaS = strtolower(trim($siswa[1])); // Nama Siswa
+                $idS = strtolower(trim($siswa[0])); 
+                $namaS = strtolower(trim($siswa[1])); 
                 $namaAsli = $siswa[1];
 
-                // Kalau barisnya ada namanya dan belum bayar
                 if ($namaAsli != '' && !in_array($idS, $sudahBayarBulanIni) && !in_array($namaS, $sudahBayarBulanIni)) {
                     $belumBayar[] = $namaAsli;
                 }
@@ -104,9 +98,10 @@ class GSheetController extends Controller
 
             return view('dashboard-kelas', compact('dataKas', 'totalPemasukan', 'totalPengeluaran', 'saldo', 'search', 'bulan', 'belumBayar', 'bulanAktif'));
         } catch (\Exception $e) {
-            return view('dashboard-kelas', ['dataKas' => [], 'totalPemasukan'=>0, 'totalPengeluaran'=>0, 'saldo'=>0, 'belumBayar'=>[]])->with('error', 'Gagal narik data: ' . $e->getMessage());
+            return view('dashboard-kelas', ['dataKas' => [], 'totalPemasukan'=>0, 'totalPengeluaran'=>0, 'saldo'=>0, 'belumBayar'=>[]])->with('error', 'Gagal memuat data dari sistem: ' . $e->getMessage());
         }
     }
+
     // ==========================================
     // DIMENSI 2: KAS KELAS (UPDATE & DELETE)
     // ==========================================
@@ -131,7 +126,7 @@ class GSheetController extends Controller
                         $idExcel = preg_replace('/[^A-Za-z0-9\-]/', '', (string)$row[0]);
                         $idDicari = preg_replace('/[^A-Za-z0-9\-]/', '', (string)$id);
                         if ($idExcel !== '' && ($idExcel === $idDicari || strpos($idDicari, $idExcel) !== false)) {
-                            $rowIndexToUpdate = $index + 1; // 1-based index buat Google Sheets
+                            $rowIndexToUpdate = $index + 1; 
                             break;
                         }
                     }
@@ -146,17 +141,16 @@ class GSheetController extends Controller
                 $params = ['valueInputOption' => 'USER_ENTERED'];
                 $service->spreadsheets_values->update($spreadsheetId, $updateRange, $body, $params);
 
-                return redirect()->back()->with('sukses', 'Mantap bro, data kas kelas berhasil diedit!');
+                return redirect()->back()->with('sukses', 'Data Kas Kelas berhasil diperbarui.');
             }
-            return redirect()->back()->with('error', 'Waduh, data ID gak ketemu buat diedit.');
+            return redirect()->back()->with('error', 'Data tidak ditemukan untuk diperbarui.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal ngedit data nih: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memperbarui data: ' . $e->getMessage());
         }
     }
 
     public function hapusKasKelas($id)
     {
-        // (Isi fungsi hapusKasKelas persis kayak sebelumnya, pakai regex preg_replace)
         $client = new Client();
         $client->setAuthConfig(storage_path('app/google-credentials.json'));
         $client->addScope(Sheets::SPREADSHEETS);
@@ -179,11 +173,11 @@ class GSheetController extends Controller
             if ($rowIndexToDelete != -1) {
                 $requests = [new Sheets\Request(['deleteDimension' => ['range' => ['sheetId' => 1856444649, 'dimension' => 'ROWS', 'startIndex' => $rowIndexToDelete, 'endIndex' => $rowIndexToDelete + 1]]])];
                 $service->spreadsheets->batchUpdate($spreadsheetId, new Sheets\BatchUpdateSpreadsheetRequest(['requests' => $requests]));
-                return redirect()->back()->with('sukses', 'Mantap bro, data kas kelas berhasil dihapus!');
+                return redirect()->back()->with('sukses', 'Data Kas Kelas berhasil dihapus.');
             }
-            return redirect()->back()->with('error', 'Waduh, data ID gak ketemu.');
+            return redirect()->back()->with('error', 'Data tidak ditemukan untuk dihapus.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage());
         }
     }
 
@@ -206,9 +200,9 @@ class GSheetController extends Controller
         
         try {
             $service->spreadsheets_values->append($spreadsheetId, 'Transaksi_Pribadi!A:F', $body, $params);
-            return redirect()->back()->with('sukses', 'Sip bro! Keuangan pribadi lu udah tercatat aman.');
+            return redirect()->back()->with('sukses', 'Data Kas Pribadi berhasil dicatat.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal nyimpen: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menyimpan data: ' . $e->getMessage());
         }
     }
 
@@ -230,21 +224,19 @@ class GSheetController extends Controller
             $filteredData = [];
 
             $search = $request->query('search');
-            $bulan = $request->query('bulan'); // Format YYYY-MM
+            $bulan = $request->query('bulan'); 
 
             foreach ($allData as $row) {
-                $row = array_pad($row, 6, ''); // Mencegah error kalau ada cell kosong
+                $row = array_pad($row, 6, ''); 
                 $tanggal = $row[1];
                 $jenis = $row[2];
                 $kategori = strtolower($row[3]);
                 $nominal = (int)$row[4];
                 $keterangan = strtolower($row[5]);
 
-                // Logika Filter
                 $matchSearch = !$search || strpos($kategori, strtolower($search)) !== false || strpos($keterangan, strtolower($search)) !== false;
                 $matchBulan = !$bulan || strpos($tanggal, $bulan) === 0;
 
-                // Hitung Saldo cuma dari data yang lolos filter
                 if ($matchSearch && $matchBulan) {
                     $filteredData[] = $row;
                     if ($jenis == 'Pemasukan') $totalPemasukan += $nominal;
@@ -257,7 +249,7 @@ class GSheetController extends Controller
 
             return view('dashboard-pribadi', compact('dataPribadi', 'totalPemasukan', 'totalPengeluaran', 'saldo', 'search', 'bulan'));
         } catch (\Exception $e) {
-            return view('dashboard-pribadi', ['dataPribadi' => [], 'totalPemasukan'=>0, 'totalPengeluaran'=>0, 'saldo'=>0])->with('error', 'Gagal narik data: ' . $e->getMessage());
+            return view('dashboard-pribadi', ['dataPribadi' => [], 'totalPemasukan'=>0, 'totalPengeluaran'=>0, 'saldo'=>0])->with('error', 'Gagal memuat data dari sistem: ' . $e->getMessage());
         }
     }
 
@@ -285,7 +277,7 @@ class GSheetController extends Controller
                         $idExcel = preg_replace('/[^A-Za-z0-9\-]/', '', (string)$row[0]);
                         $idDicari = preg_replace('/[^A-Za-z0-9\-]/', '', (string)$id);
                         if ($idExcel !== '' && ($idExcel === $idDicari || strpos($idDicari, $idExcel) !== false)) {
-                            $rowIndexToUpdate = $index + 1; // 1-based index buat Google Sheets
+                            $rowIndexToUpdate = $index + 1; 
                             break;
                         }
                     }
@@ -293,7 +285,6 @@ class GSheetController extends Controller
             }
 
             if ($rowIndexToUpdate != -1) {
-                // Tembak langsung ke baris yang spesifik (Misal A5:F5)
                 $updateRange = "Transaksi_Pribadi!A{$rowIndexToUpdate}:F{$rowIndexToUpdate}";
                 $updateValues = [[$id, $request->tanggal, $request->jenis, $request->kategori, $request->nominal, $request->keterangan]];
                 
@@ -301,17 +292,16 @@ class GSheetController extends Controller
                 $params = ['valueInputOption' => 'USER_ENTERED'];
                 $service->spreadsheets_values->update($spreadsheetId, $updateRange, $body, $params);
 
-                return redirect()->back()->with('sukses', 'Mantap bro, data kas pribadi berhasil diedit!');
+                return redirect()->back()->with('sukses', 'Data Kas Pribadi berhasil diperbarui.');
             }
-            return redirect()->back()->with('error', 'Waduh, data ID gak ketemu buat diedit.');
+            return redirect()->back()->with('error', 'Data tidak ditemukan untuk diperbarui.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal ngedit data nih: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memperbarui data: ' . $e->getMessage());
         }
     }
 
     public function hapusKasPribadi($id)
     {
-        // (Isi fungsi hapusKasPribadi persis kayak sebelumnya, pakai regex preg_replace)
         $client = new Client();
         $client->setAuthConfig(storage_path('app/google-credentials.json'));
         $client->addScope(Sheets::SPREADSHEETS);
@@ -334,17 +324,16 @@ class GSheetController extends Controller
             if ($rowIndexToDelete != -1) {
                 $requests = [new Sheets\Request(['deleteDimension' => ['range' => ['sheetId' => 1464599245, 'dimension' => 'ROWS', 'startIndex' => $rowIndexToDelete, 'endIndex' => $rowIndexToDelete + 1]]])];
                 $service->spreadsheets->batchUpdate($spreadsheetId, new Sheets\BatchUpdateSpreadsheetRequest(['requests' => $requests]));
-                return redirect()->back()->with('sukses', 'Mantap bro, data kas pribadi berhasil dihapus!');
+                return redirect()->back()->with('sukses', 'Data Kas Pribadi berhasil dihapus.');
             }
-            return redirect()->back()->with('error', 'Waduh, data ID gak ketemu.');
+            return redirect()->back()->with('error', 'Data tidak ditemukan untuk dihapus.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage());
         }
     }
 
-        public function downloadPDF()
+    public function downloadPDF()
     {
-        // 1. Panggil koneksi ke Google Sheet (Sama persis kayak indexKasKelas)
         $client = new Client();
         $client->setAuthConfig(storage_path('app/google-credentials.json'));
         $client->addScope(Sheets::SPREADSHEETS);
@@ -353,17 +342,13 @@ class GSheetController extends Controller
         $spreadsheetId = '1udi_WkEsfL_DqnSzxjbH8-2kBBs2eFEfCZKwmWR1ASQ';
         
         try {
-            // 2. Tarik data dari GSheet Transaksi Kas
             $response = $service->spreadsheets_values->get($spreadsheetId, 'Transaksi_Kas!A2:F');
             $allData = $response->getValues() ?? []; 
-            
-            // Kita balik datanya biar transaksi paling baru ada di urutan paling atas
             $allData = array_reverse($allData);
 
-            // 3. Kita ubah format datanya biar gampang dibaca sama file PDF lu
             $dataKas = [];
             foreach ($allData as $row) {
-                $row = array_pad($row, 6, ''); // Antisipasi kalau ada kolom/cell yang kosong di Excel
+                $row = array_pad($row, 6, ''); 
                 $dataKas[] = [
                     'Tanggal'    => $row[1],
                     'Jenis'      => $row[2],
@@ -373,22 +358,17 @@ class GSheetController extends Controller
                 ];
             }
 
-            // 4. Siapin bungkusan data yang mau dilempar ke file template PDF
             $data = [
                 'title' => 'Laporan Kas Kelas',
                 'tanggal' => date('d/m/Y'),
                 'kas' => $dataKas 
             ];
 
-            // 5. Proses merubah file laporan-pdf.blade.php jadi PDF beneran
             $pdf = Pdf::loadView('laporan-pdf', $data);
-
-            // 6. Langsung download filenya dengan nama yang cakep
             return $pdf->download('Laporan_Kas_Kelas_'.date('Y-m-d').'.pdf');
 
         } catch (\Exception $e) {
-            // Kalau misal internet putus atau error GSheet, kita balikin ke halaman dengan pesan error
-            return redirect()->back()->with('error', 'Gagal bikin PDF bro: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal membuat dokumen PDF: ' . $e->getMessage());
         }
     }
 
@@ -412,7 +392,7 @@ class GSheetController extends Controller
                 $dataPribadi[] = [
                     'Tanggal'    => $row[1],
                     'Jenis'      => $row[2],
-                    'Kategori'   => $row[3], // Kalau di kas kelas namanya ID Siswa, di sini Kategori
+                    'Kategori'   => $row[3],
                     'Nominal'    => $row[4],
                     'Keterangan' => $row[5]
                 ];
@@ -428,7 +408,60 @@ class GSheetController extends Controller
             return $pdf->download('Laporan_Kas_Pribadi_'.date('Y-m-d').'.pdf');
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal bikin PDF bro: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal membuat dokumen PDF: ' . $e->getMessage());
+        }
+    }
+// ==========================================
+    // DIMENSI 5: DATA SISWA (CREATE & READ)
+    // ==========================================
+    public function indexSiswa(Request $request)
+    {
+        $client = new \Google\Client();
+        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->addScope(\Google\Service\Sheets::SPREADSHEETS);
+        $service = new \Google\Service\Sheets($client);
+        
+        // Ganti dengan Spreadsheet ID Anda
+        $spreadsheetId = '1udi_WkEsfL_DqnSzxjbH8-2kBBs2eFEfCZKwmWR1ASQ';
+        
+        try {
+            $response = $service->spreadsheets_values->get($spreadsheetId, 'Siswa!A2:C');
+            $dataSiswa = $response->getValues() ?? []; 
+            
+            // Membalik urutan agar data terbaru muncul di atas
+            $dataSiswa = array_reverse($dataSiswa);
+
+            return view('dashboard-siswa', compact('dataSiswa'));
+        } catch (\Exception $e) {
+            return view('dashboard-siswa', ['dataSiswa' => []])->with('error', 'Gagal memuat data siswa: ' . $e->getMessage());
+        }
+    }
+
+    public function simpanSiswa(Request $request)
+    {
+        // Validasi input dasar
+        $request->validate([
+            'id_siswa' => 'required',
+            'nama' => 'required',
+        ]);
+
+        $client = new \Google\Client();
+        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->addScope(\Google\Service\Sheets::SPREADSHEETS);
+        $service = new \Google\Service\Sheets($client);
+        
+        $spreadsheetId = '1udi_WkEsfL_DqnSzxjbH8-2kBBs2eFEfCZKwmWR1ASQ';
+        
+        // Format susunan data: ID_Siswa, Nama, NIS
+        $values = [[$request->id_siswa, $request->nama, $request->nis]];
+        $body = new \Google\Service\Sheets\ValueRange(['values' => $values]);
+        $params = ['valueInputOption' => 'USER_ENTERED'];
+        
+        try {
+            $service->spreadsheets_values->append($spreadsheetId, 'Siswa!A:C', $body, $params);
+            return redirect()->back()->with('sukses', 'Data Siswa berhasil disimpan ke dalam sistem.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Proses penyimpanan data gagal: ' . $e->getMessage());
         }
     }
 }

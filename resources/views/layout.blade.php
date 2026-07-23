@@ -38,7 +38,7 @@
         <!-- HEADER (Fix di atas) -->
         <header class="px-5 pt-8 pb-4 bg-white flex justify-between items-center z-10 shadow-sm">
             <div>
-                <p class="text-xs text-gray-500 font-medium mb-1">Halo, Bosku! 👋</p>
+                <p class="text-xs text-gray-500 font-medium mb-1">Halo, Selamat Datang 👋</p>
                 <h1 class="text-xl font-bold text-gray-800">BukuKas App</h1>
             </div>
             
