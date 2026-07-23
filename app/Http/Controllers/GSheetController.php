@@ -15,7 +15,7 @@ class GSheetController extends Controller
     public function simpanKasKelas(Request $request)
     {
         $client = new Client();
-        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->setAuthConfig(json_decode(env('GOOGLE_SERVICE_ACCOUNT_JSON'), true));
         $client->addScope(Sheets::SPREADSHEETS);
         $service = new Sheets($client);
         
@@ -37,7 +37,7 @@ class GSheetController extends Controller
     public function indexKasKelas(Request $request)
     {
         $client = new Client();
-        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->setAuthConfig(json_decode(env('GOOGLE_SERVICE_ACCOUNT_JSON'), true));
         $client->addScope(Sheets::SPREADSHEETS);
         $service = new Sheets($client);
         
@@ -108,7 +108,7 @@ class GSheetController extends Controller
     public function updateKasKelas(Request $request, $id)
     {
         $client = new Client();
-        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->setAuthConfig(json_decode(env('GOOGLE_SERVICE_ACCOUNT_JSON'), true));
         $client->addScope(Sheets::SPREADSHEETS);
         $service = new Sheets($client);
 
@@ -152,7 +152,7 @@ class GSheetController extends Controller
     public function hapusKasKelas($id)
     {
         $client = new Client();
-        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->setAuthConfig(json_decode(env('GOOGLE_SERVICE_ACCOUNT_JSON'), true));
         $client->addScope(Sheets::SPREADSHEETS);
         $service = new Sheets($client);
         $spreadsheetId = '1udi_WkEsfL_DqnSzxjbH8-2kBBs2eFEfCZKwmWR1ASQ';
@@ -187,7 +187,7 @@ class GSheetController extends Controller
     public function simpanKasPribadi(Request $request)
     {
         $client = new Client();
-        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->setAuthConfig(json_decode(env('GOOGLE_SERVICE_ACCOUNT_JSON'), true));
         $client->addScope(Sheets::SPREADSHEETS);
         $service = new Sheets($client);
         
@@ -209,7 +209,7 @@ class GSheetController extends Controller
     public function indexKasPribadi(Request $request)
     {
         $client = new Client();
-        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->setAuthConfig(json_decode(env('GOOGLE_SERVICE_ACCOUNT_JSON'), true));
         $client->addScope(Sheets::SPREADSHEETS);
         $service = new Sheets($client);
         
@@ -259,7 +259,7 @@ class GSheetController extends Controller
     public function updateKasPribadi(Request $request, $id)
     {
         $client = new Client();
-        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->setAuthConfig(json_decode(env('GOOGLE_SERVICE_ACCOUNT_JSON'), true));
         $client->addScope(Sheets::SPREADSHEETS);
         $service = new Sheets($client);
 
@@ -303,7 +303,7 @@ class GSheetController extends Controller
     public function hapusKasPribadi($id)
     {
         $client = new Client();
-        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->setAuthConfig(json_decode(env('GOOGLE_SERVICE_ACCOUNT_JSON'), true));
         $client->addScope(Sheets::SPREADSHEETS);
         $service = new Sheets($client);
         $spreadsheetId = '1udi_WkEsfL_DqnSzxjbH8-2kBBs2eFEfCZKwmWR1ASQ';
@@ -335,7 +335,7 @@ class GSheetController extends Controller
     public function downloadPDF()
     {
         $client = new Client();
-        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->setAuthConfig(json_decode(env('GOOGLE_SERVICE_ACCOUNT_JSON'), true));
         $client->addScope(Sheets::SPREADSHEETS);
         $service = new Sheets($client);
         
@@ -375,7 +375,7 @@ class GSheetController extends Controller
     public function downloadPDFPribadi()
     {
         $client = new Client();
-        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->setAuthConfig(json_decode(env('GOOGLE_SERVICE_ACCOUNT_JSON'), true));
         $client->addScope(Sheets::SPREADSHEETS);
         $service = new Sheets($client);
         
@@ -417,7 +417,7 @@ class GSheetController extends Controller
     public function indexSiswa(Request $request)
     {
         $client = new \Google\Client();
-        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->setAuthConfig(json_decode(env('GOOGLE_SERVICE_ACCOUNT_JSON'), true));
         $client->addScope(\Google\Service\Sheets::SPREADSHEETS);
         $service = new \Google\Service\Sheets($client);
         
@@ -446,7 +446,7 @@ class GSheetController extends Controller
         ]);
 
         $client = new \Google\Client();
-        $client->setAuthConfig(storage_path('app/google-credentials.json'));
+        $client->setAuthConfig(json_decode(env('GOOGLE_SERVICE_ACCOUNT_JSON'), true));
         $client->addScope(\Google\Service\Sheets::SPREADSHEETS);
         $service = new \Google\Service\Sheets($client);
         
