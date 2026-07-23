@@ -44,25 +44,39 @@ class GSheetController extends Controller
         $spreadsheetId = '1udi_WkEsfL_DqnSzxjbH8-2kBBs2eFEfCZKwmWR1ASQ';
         
         try {
+            // 1. Tarik Data Transaksi Kas
             $response = $service->spreadsheets_values->get($spreadsheetId, 'Transaksi_Kas!A2:F');
             $allData = $response->getValues() ?? []; 
+
+            // 2. Tarik Data Siswa (Dari Sheet yang lu tunjukin di gambar)
+            $responseSiswa = $service->spreadsheets_values->get($spreadsheetId, 'Siswa!A2:C');
+            $allSiswa = $responseSiswa->getValues() ?? [];
             
             $totalPemasukan = 0;
             $totalPengeluaran = 0;
             $filteredData = [];
+            $sudahBayarBulanIni = []; // Nampung yang udah lunas
 
             $search = $request->query('search');
             $bulan = $request->query('bulan');
+            $bulanAktif = $bulan ?: date('Y-m'); // Kalau filter bulan kosong, pakai bulan sekarang
 
             foreach ($allData as $row) {
                 $row = array_pad($row, 6, ''); // Antisipasi cell kosong
                 $tanggal = $row[1];
                 $jenis = $row[2];
+                $idSiswa = $row[3];
                 $nominal = (int)$row[4];
                 $keterangan = strtolower($row[5]);
 
-                $matchSearch = !$search || strpos($keterangan, strtolower($search)) !== false;
+                // Filter dashboard utama
+                $matchSearch = !$search || strpos($keterangan, strtolower($search)) !== false || strpos(strtolower($idSiswa), strtolower($search)) !== false;
                 $matchBulan = !$bulan || strpos($tanggal, $bulan) === 0;
+
+                // Kumpulin nama/ID yang udah bayar di bulan yang lagi di-filter
+                if (strpos($tanggal, $bulanAktif) === 0 && ($jenis == 'Pemasukan' || $jenis == 'Uang Masuk')) {
+                    $sudahBayarBulanIni[] = strtolower(trim($idSiswa));
+                }
 
                 if ($matchSearch && $matchBulan) {
                     $filteredData[] = $row;
@@ -74,12 +88,25 @@ class GSheetController extends Controller
             $saldo = $totalPemasukan - $totalPengeluaran;
             $dataKas = array_reverse($filteredData);
 
-            return view('dashboard-kelas', compact('dataKas', 'totalPemasukan', 'totalPengeluaran', 'saldo', 'search', 'bulan'));
+            // 3. Logika Cek Penunggak Kas
+            $belumBayar = [];
+            foreach ($allSiswa as $siswa) {
+                $siswa = array_pad($siswa, 3, '');
+                $idS = strtolower(trim($siswa[0])); // ID_Siswa
+                $namaS = strtolower(trim($siswa[1])); // Nama Siswa
+                $namaAsli = $siswa[1];
+
+                // Kalau barisnya ada namanya dan belum bayar
+                if ($namaAsli != '' && !in_array($idS, $sudahBayarBulanIni) && !in_array($namaS, $sudahBayarBulanIni)) {
+                    $belumBayar[] = $namaAsli;
+                }
+            }
+
+            return view('dashboard-kelas', compact('dataKas', 'totalPemasukan', 'totalPengeluaran', 'saldo', 'search', 'bulan', 'belumBayar', 'bulanAktif'));
         } catch (\Exception $e) {
-            return view('dashboard-kelas', ['dataKas' => [], 'totalPemasukan'=>0, 'totalPengeluaran'=>0, 'saldo'=>0])->with('error', 'Gagal narik data: ' . $e->getMessage());
+            return view('dashboard-kelas', ['dataKas' => [], 'totalPemasukan'=>0, 'totalPengeluaran'=>0, 'saldo'=>0, 'belumBayar'=>[]])->with('error', 'Gagal narik data: ' . $e->getMessage());
         }
     }
-
     // ==========================================
     // DIMENSI 2: KAS KELAS (UPDATE & DELETE)
     // ==========================================
