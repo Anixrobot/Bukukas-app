@@ -30,3 +30,14 @@ Route::get('/kas-kelas', [\App\Http\Controllers\GSheetController::class, 'indexK
 Route::get('/pribadi', [\App\Http\Controllers\GSheetController::class, 'indexKasPribadi']);
 Route::get('/kas-kelas/download-pdf', [\App\Http\Controllers\GSheetController::class, 'downloadPDF'])->name('kas.pdf');
 Route::get('/pribadi/download-pdf', [\App\Http\Controllers\GSheetController::class, 'downloadPDFPribadi'])->name('pribadi.pdf');
+
+
+// --- RUTE AKSI KAS KELAS ---
+Route::post('/simpan-kas-kelas', [\App\Http\Controllers\GSheetController::class, 'simpanKasKelas']);
+Route::post('/update-kas-kelas/{id}', [\App\Http\Controllers\GSheetController::class, 'updateKasKelas']);
+Route::delete('/hapus-kas-kelas/{id}', [\App\Http\Controllers\GSheetController::class, 'hapusKasKelas']);
+
+// --- RUTE AKSI KAS PRIBADI ---
+Route::post('/simpan-kas-pribadi', [\App\Http\Controllers\GSheetController::class, 'simpanKasPribadi']);
+Route::post('/update-kas-pribadi/{id}', [\App\Http\Controllers\GSheetController::class, 'updateKasPribadi']);
+Route::delete('/hapus-kas-pribadi/{id}', [\App\Http\Controllers\GSheetController::class, 'hapusKasPribadi']);

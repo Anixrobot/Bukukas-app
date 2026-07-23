@@ -2,56 +2,71 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buku Kas Super</title>
-    <!-- Manggil CSS Bootstrap biar web langsung cakep -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BukuKas App</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        candyBlue: '#00B4D8',
+                        candyBlueDark: '#0096C7',
+                        limeGreen: '#84CC16',
+                        limeGreenHover: '#65A30D',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #e5e7eb; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .active-scale:active { transform: scale(0.96); transition: transform 0.1s; }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+    </style>
 </head>
-<body class="bg-light">
+<body class="flex justify-center h-screen overflow-hidden">
 
-    <!-- Navbar / Menu Atas -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="#">BukuKas Apps</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <!-- Kumpulan menu di kanan navbar -->
-                <ul class="navbar-nav ms-auto align-items-center">
-                    <!-- Nanti link ini bakal kita arahin ke route Laravel -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="/kas-kelas">🏢 Kas Kelas</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/pribadi">💰 Kas Pribadi</a>
-                    </li>
-                    
-                    <!-- Tombol Logout -->
-                    <li class="nav-item ms-lg-3">
-                        <form method="POST" action="{{ route('logout') }}" class="m-0">
-                            @csrf
-                            <button type="submit" class="btn btn-outline-danger border-0 fw-bold d-flex align-items-center gap-2">
-                                <!-- Icon Orang (SVG) -->
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
-                                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-                                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
-                                </svg>
-                                Logout
-                            </button>
-                        </form>
-                    </li>
-                </ul>
+    <!-- MOBILE APP CONTAINER -->
+    <div class="w-full max-w-md bg-gray-50 h-full flex flex-col relative shadow-2xl overflow-hidden">
+        
+        <!-- HEADER (Fix di atas) -->
+        <header class="px-5 pt-8 pb-4 bg-white flex justify-between items-center z-10 shadow-sm">
+            <div>
+                <p class="text-xs text-gray-500 font-medium mb-1">Halo, Bosku! 👋</p>
+                <h1 class="text-xl font-bold text-gray-800">BukuKas App</h1>
             </div>
-        </div>
-    </nav>
+            
+            <!-- Tombol Logout -->
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" onclick="return confirm('Yakin mau keluar?')" class="active-scale w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-500 shadow-sm border border-red-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                </button>
+            </form>
+        </header>
 
-    <!-- Tempat nongolnya konten dari file dashboard lain -->
-    <div class="container">
-        @yield('konten')
+        <!-- MAIN CONTENT (Scrollable Area) -->
+        <main class="flex-1 overflow-y-auto no-scrollbar pb-24">
+            @yield('konten')
+        </main>
+
+        <!-- BOTTOM NAVIGATION (Fix di bawah) -->
+        <nav class="bg-white border-t border-gray-200 px-6 py-3 flex justify-around items-center z-20 pb-safe absolute bottom-0 w-full">
+            <a href="/kas-kelas" class="flex flex-col items-center gap-1 active-scale {{ Request::is('kas-kelas') ? 'text-candyBlue' : 'text-gray-400 hover:text-candyBlue' }}">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+                <span class="text-[10px] font-semibold">Kas Kelas</span>
+            </a>
+            <a href="/pribadi" class="flex flex-col items-center gap-1 active-scale {{ Request::is('pribadi') ? 'text-candyBlue' : 'text-gray-400 hover:text-candyBlue' }}">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1v-1a2 2 0 00-2-2L4 13z"></path></svg>
+                <span class="text-[10px] font-semibold">Kas Pribadi</span>
+            </a>
+        </nav>
     </div>
-
-    <!-- Manggil Javascript Bootstrap -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
